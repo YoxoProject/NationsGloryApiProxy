@@ -15,6 +15,10 @@ pub async fn get_notations(
         return Err(rocket::http::Status::BadRequest);
     }
 
+    let week = week.to_lowercase();
+    let server = server.to_lowercase();
+    let country = country.map(|c| c.to_lowercase());
+
     let url = format!(
         "https://publicapi.nationsglory.fr/notations?week={}&server={}",
         week, server,
