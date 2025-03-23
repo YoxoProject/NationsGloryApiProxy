@@ -46,3 +46,35 @@ pub async fn get_notations(
         response
     }
 }
+
+#[get("/country/<server>/<country>")]
+pub async fn get_country(
+    queue: &State<mpsc::Sender<QueuedRequest>>,
+    redis_client: &State<redis::Client>,
+    api_keys: ApiKeys,
+    server: &str,
+    country: &str,
+) -> Result<String, rocket::http::Status> {
+    if api_keys.0.is_empty() {
+        return Err(rocket::http::Status::BadRequest);
+    }
+
+    let server = server.to_lowercase();
+    let country = country.to_lowercase();
+
+    let url = format!(
+        "https://publicapi.nationsglory.fr/country/{}/{}",
+        server,
+        country
+    );
+
+    let request = QueuedRequest {
+        url,
+        method: "GET".to_string(),
+        body: None,
+        api_keys: api_keys.0,
+        response_channel: None,
+    };
+
+    api_request(queue, redis_client, request).await
+}

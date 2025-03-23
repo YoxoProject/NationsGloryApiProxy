@@ -1,5 +1,5 @@
 use std::env;
-use crate::endpoints::get_notations;
+use crate::endpoints::{get_country, get_notations};
 use crate::utils::RequestQueue;
 use crate::worker::process_requests;
 use rocket::routes;
@@ -31,7 +31,7 @@ async fn main() -> Result<(), rocket::Error> {
     rocket::build()
         .manage(tx)
         .manage(redis_client)
-        .mount("/", routes![get_notations])
+        .mount("/", routes![get_notations, get_country])
         .launch()
         .await?;
 
