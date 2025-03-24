@@ -31,9 +31,10 @@ pub(crate) async fn process_requests(
 
                 match response {
                     Ok(resp) => {
-                        let body: Value = resp.json().await.unwrap_or_else(|_| json!({"error": "Invalid JSON"}));
+                        let body_text = resp.text().await.unwrap_or_else(|_| json!({"error": "Failed to read response"}).to_string());
+                        let body: Value = serde_json::from_str(&body_text).unwrap_or_else(|_| json!({"error": "Failed to parse response", "message": body_text}));
 
-                        if body.get("error") == Some(&json!("unauthorized.key")) {
+                        if body.get("error").is_some() {
                             if let Some(channel) = request.response_channel.take() {
                                 let _ = channel.send(body.to_string());
                             }
