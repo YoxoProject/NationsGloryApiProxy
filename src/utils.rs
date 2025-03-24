@@ -3,6 +3,8 @@ use redis::AsyncCommands;
 use rocket::{Request, State};
 use std::time::{Duration, Instant};
 use rocket::request::{FromRequest, Outcome};
+use rocket::serde::json::Json;
+use serde_json::Value;
 use tokio::sync::{mpsc, oneshot};
 
 #[derive(Debug)]
@@ -58,12 +60,14 @@ pub async fn api_request(
     queue: &State<mpsc::Sender<QueuedRequest>>,
     redis_client: &State<redis::Client>,
     request: QueuedRequest,
-) -> Result<String, rocket::http::Status> {
+) -> Result<Json<Value>, rocket::http::Status> {
     // Vérification du cache Redis
     let mut redis_conn = redis_client.get_multiplexed_async_connection().await.unwrap();
     let cache_key = format!("cache:{}", request.url);
-    if let Ok(cached_response) = redis_conn.get(&cache_key).await {
-        return Ok(cached_response);
+    if let Ok(cached_response) = redis_conn.get::<_, String>(&cache_key).await {
+        if let Ok(json_value) = serde_json::from_str::<Value>(&cached_response) {
+            return Ok(Json(json_value));
+        }
     }
 
     // Envoi au worker et attente de la réponse
@@ -76,7 +80,10 @@ pub async fn api_request(
     queue.send(queued_request).await.unwrap();
 
     match rx.await {
-        Ok(response) => Ok(response),
+        Ok(response) => match serde_json::from_str::<Value>(&response) {
+            Ok(json_value) => Ok(Json(json_value)),
+            Err(_) => Err(rocket::http::Status::InternalServerError),
+        },
         Err(_) => Err(rocket::http::Status::InternalServerError),
     }
 }
