@@ -39,12 +39,14 @@ pub async fn get_notations(
     if country.is_some() {
         let country = country.unwrap();
         if let Ok(response) = response {
-            let filtered_notations = response
-                .as_array().unwrap()
-                .into_iter()
-                .filter(|n| n["pays"].as_str().unwrap().to_lowercase() == country.to_lowercase())
-                .collect::<Vec<_>>();
-            return Ok(Json(serde_json::to_value(filtered_notations).unwrap()));
+            if let Some(notation) = response.as_array() {
+                let filtered_notations = notation
+                    .into_iter()
+                    .filter(|n| n["pays"].as_str().unwrap().to_lowercase() == country)
+                    .collect::<Vec<_>>();
+                return Ok(Json(serde_json::to_value(filtered_notations).unwrap()));
+            }
+            return Ok(response); // Si la réponse n'est pas un tableau, on la renvoie telle quelle (c'est que le json est inattendu)
         }
     }
     response // Soit si country est None, soit si la requête à échouer (Err)
