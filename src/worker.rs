@@ -44,7 +44,12 @@ pub(crate) async fn process_requests(
                         // Sauvegarde en cache Redis
                         let mut redis_conn = redis_client.get_multiplexed_async_connection().await.unwrap();
                         let cache_key = format!("cache:{}", url);
-                        let _: () = redis_conn.set_ex(cache_key, body.to_string(), 1800).await.unwrap();
+                        {
+                            let actual_time = chrono::Utc::now().to_rfc3339();
+                            let body = json!({"cached": true, "cached_time": actual_time,"data": body});
+                            let _: () = redis_conn.set_ex(cache_key, body.to_string(), 1800).await.unwrap();
+                        }
+                        let body = json!({"cached": false, "data": body});
 
                         // Envoyer la réponse au client
                         if let Some(channel) = request.response_channel.take() {
