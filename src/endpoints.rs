@@ -39,14 +39,16 @@ pub async fn get_notations(
     if country.is_some() {
         let country = country.unwrap();
         if let Ok(response) = response {
-            if let Some(notation) = response.get("data").unwrap().as_array() {
-                let filtered_notations = notation
-                    .into_iter()
-                    .filter(|n| n["pays"].as_str().unwrap().to_lowercase() == country)
-                    .collect::<Vec<_>>();
-                let mut response = response.as_object().unwrap().clone();
-                response.insert("data".to_string(), serde_json::to_value(filtered_notations).unwrap());
-                return Ok(Json(json!(response)));
+            if let Some(data) = response.get("data") {
+                if let Some(notation) = data.as_array() {
+                    let filtered_notations = notation
+                        .into_iter()
+                        .filter(|n| n["pays"].as_str().unwrap().to_lowercase() == country)
+                        .collect::<Vec<_>>();
+                    let mut response = response.as_object().unwrap().clone();
+                    response.insert("data".to_string(), serde_json::to_value(filtered_notations).unwrap());
+                    return Ok(Json(json!(response)));
+                }
             }
             return Ok(response); // Si la réponse n'est pas un tableau, on la renvoie telle quelle (c'est que le json est inattendu)
         }
