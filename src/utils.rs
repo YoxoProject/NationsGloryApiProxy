@@ -1,26 +1,51 @@
 use dashmap::DashMap;
 use redis::AsyncCommands;
-use rocket::{Request, State};
-use std::time::{Duration, Instant};
 use rocket::request::{FromRequest, Outcome};
 use rocket::serde::json::Json;
+use rocket::{Request, State};
 use serde_json::Value;
-use tokio::sync::{mpsc, oneshot};
+use std::time::{Duration, Instant};
+use tokio::sync::{broadcast, mpsc};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct QueuedRequest {
     pub url: String,
     pub method: String,
-    pub body: Option<String>,
     pub api_keys: Vec<String>,
-    pub response_channel: Option<oneshot::Sender<String>>,
 }
 
-pub struct RequestQueue {
+impl QueuedRequest {
+    // Fonction pour insérer une requête dans la file d'attente
+    // Si une requête avec la même URL et le même verbe HTTP existe déjà, on ajoute des clés API à la requête existante afin de lui donner plus de chances d'être exécutée
+    // Sinon, on ajoute la nouvelle requête à la file d'attente tout simplement
+    pub fn insert_request_to_queue(list: &mut Vec<QueuedRequest>, new_request: QueuedRequest) {
+        if let Some(existing) = list
+            .iter_mut()
+            .find(|req| req.url == new_request.url && req.method == new_request.method)
+        {
+            for key in new_request.api_keys {
+                if !existing.api_keys.contains(&key) {
+                    existing.api_keys.push(key);
+                }
+            }
+        } else {
+            list.push(new_request);
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct RequestResponse {
+    pub url: String,
+    pub method: String,
+    pub body: Value,
+}
+
+pub struct ApiKeyUsage {
     last_usage: DashMap<String, Instant>, // Associe une clé API à son dernier usage
 }
 
-impl RequestQueue {
+impl ApiKeyUsage {
     pub fn new() -> Self {
         Self {
             last_usage: DashMap::new(),
@@ -60,9 +85,13 @@ pub async fn api_request(
     queue: &State<mpsc::Sender<QueuedRequest>>,
     redis_client: &State<redis::Client>,
     request: QueuedRequest,
+    response_broadcast_tx: &State<broadcast::Sender<RequestResponse>>,
 ) -> Result<Json<Value>, rocket::http::Status> {
     // Vérification du cache Redis
-    let mut redis_conn = redis_client.get_multiplexed_async_connection().await.unwrap();
+    let mut redis_conn = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .unwrap();
     let cache_key = format!("cache:{}", request.url);
     if let Ok(cached_response) = redis_conn.get::<_, String>(&cache_key).await {
         if let Ok(json_value) = serde_json::from_str::<Value>(&cached_response) {
@@ -70,20 +99,17 @@ pub async fn api_request(
         }
     }
 
-    // Envoi au worker et attente de la réponse
-    let (tx, rx) = oneshot::channel();
-    let queued_request = QueuedRequest {
-        response_channel: Some(tx),
-        ..request
-    };
+    let url = request.url.clone();
+    let method = request.method.clone();
 
-    queue.send(queued_request).await.unwrap();
+    let mut rx = response_broadcast_tx.subscribe();
 
-    match rx.await {
-        Ok(response) => match serde_json::from_str::<Value>(&response) {
-            Ok(json_value) => Ok(Json(json_value)),
-            Err(_) => Err(rocket::http::Status::InternalServerError),
-        },
-        Err(_) => Err(rocket::http::Status::InternalServerError),
+    queue.send(request).await.unwrap();
+
+    while let Ok(response) = rx.recv().await {
+        if response.url == url && response.method == method {
+            return Ok(Json(response.body));
+        }
     }
+    Err(rocket::http::Status::InternalServerError)
 }

@@ -1,11 +1,11 @@
-use std::env;
 use crate::endpoints::{get_country, get_notations};
-use crate::utils::RequestQueue;
-use crate::worker::process_requests;
-use rocket::routes;
-use std::sync::Arc;
+use crate::utils::ApiKeyUsage;
+use crate::worker::process_requests_v2;
 use dotenv::dotenv;
-use tokio::sync::mpsc;
+use rocket::routes;
+use std::env;
+use std::sync::Arc;
+use tokio::sync::{broadcast, mpsc};
 
 mod endpoints;
 mod utils;
@@ -16,20 +16,27 @@ async fn main() -> Result<(), rocket::Error> {
     dotenv().ok(); // Charge le fichier .env
     let redis_url = env::var("REDIS_URL").expect("REDIS_URL must be set");
 
-    let (tx, rx) = mpsc::channel(100);
-    let queue = Arc::new(RequestQueue::new());
+    let (queue_tx, queue_rx) = mpsc::channel(100);
+    let (response_broadcast_tx, _) = broadcast::channel(100);
+    let api_key_usage = Arc::new(ApiKeyUsage::new());
     let redis_client = redis::Client::open(redis_url).unwrap();
 
     // Lancer la tâche de worker dans un contexte async
-    let worker_rx = rx;
-    let worker_queue = queue.clone();
     let worker_redis = redis_client.clone();
+    let worker_response_broadcast_tx = response_broadcast_tx.clone();
     tokio::spawn(async move {
-        process_requests(worker_rx, worker_queue, worker_redis).await;
+        process_requests_v2(
+            queue_rx,
+            worker_response_broadcast_tx,
+            api_key_usage,
+            worker_redis,
+        )
+        .await;
     });
 
     rocket::build()
-        .manage(tx)
+        .manage(queue_tx)
+        .manage(response_broadcast_tx)
         .manage(redis_client)
         .mount("/", routes![get_notations, get_country])
         .launch()
