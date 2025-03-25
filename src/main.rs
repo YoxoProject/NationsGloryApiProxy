@@ -2,9 +2,11 @@ use crate::endpoints::{get_country, get_notations};
 use crate::utils::ApiKeyUsage;
 use crate::worker::process_requests_v2;
 use dotenv::dotenv;
-use rocket::routes;
+use rocket::{get, routes};
 use std::env;
+use std::path::Path;
 use std::sync::Arc;
+use rocket::fs::NamedFile;
 use tokio::sync::{broadcast, mpsc};
 
 mod endpoints;
@@ -38,9 +40,13 @@ async fn main() -> Result<(), rocket::Error> {
         .manage(queue_tx)
         .manage(response_broadcast_tx)
         .manage(redis_client)
-        .mount("/", routes![get_notations, get_country])
+        .mount("/", routes![home_page, get_notations, get_country])
         .launch()
         .await?;
 
     Ok(())
+}
+#[get("/")]
+async fn home_page() -> Option<NamedFile> {
+    NamedFile::open(Path::new("static/index.html")).await.ok()
 }

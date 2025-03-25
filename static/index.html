@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NationsGlory API Proxy</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            border-radius: 20px;
+        }
+        header {
+            background: #333;
+            color: #fff;
+            padding-top: 30px;
+            min-height: 70px;
+            border-bottom: hsl(174.4, 41.9%, 64.9%) 3px solid;
+        }
+        .showcase {
+            background: url('https://via.placeholder.com/1500x400') no-repeat 0 -400px;
+            text-align: center;
+            color: hsl(174.4, 41.9%, 64.9%);
+        }
+        .showcase h1 {
+            margin-top: 100px;
+            font-size: 55px;
+            margin-bottom: 10px;
+        }
+        .showcase p {
+            font-size: 20px;
+        }
+        .main-content {
+            padding: 20px;
+            background: #fff;
+            margin-top: 20px;
+        }
+        .main-content h2 {
+            color: #333;
+        }
+        .endpoint {
+            background: #f4f4f4;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 5px solid hsl(174.4, 41.9%, 64.9%);
+        }
+        .endpoint h3 {
+            margin: 0;
+        }
+        .endpoint p {
+            margin: 5px 0;
+        }
+        footer {
+            background: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 20px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 3px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        pre {
+            background: #f4f4f4;
+            padding: 7px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        a {
+            color: hsl(174.4, 41.9%, 64.9%);
+        }
+    </style>
+</head>
+<body>
+<header>
+    <div class="container">
+        <h1>NationsGlory API Proxy</h1>
+    </div>
+</header>
+<section class="showcase">
+    <div class="container">
+        <h1>Welcome to NationsGlory API Proxy</h1>
+        <p>Handle rate limiting and caching for the NationsGlory API with ease.</p>
+    </div>
+</section>
+<section class="main-content container">
+    <h2>Project Overview</h2>
+    <p>NationsGlory API Proxy is a Rust-based intermediary service designed to act as a proxy between clients and the NationsGlory API. Its primary purpose is to handle rate limiting and caching, ensuring that clients do not encounter rate limit errors and can benefit from cached responses for improved performance.</p>
+
+    <h2>How to Use</h2>
+    <h3>Obtaining an API Key</h3>
+    <p>First, obtain an NationsGlory API key from <a href="https://publicapi.nationsglory.fr/">the official NationsGlory API</a>.</p>
+
+    <h3>Making Requests</h3>
+    <p>Once you have your API key, you can make requests to the proxy server by including your API key(s) in the <code>Authorization</code> header.</p>
+
+    <h3>Example</h3>
+    <p>To fetch notations for a specific week and server, you can use the following <code>curl</code> command:</p>
+    <pre><code>curl -H "Authorization: &lt;your_api_key&gt;" "http://localhost:8000/notations?week=2880&server=red&country=france"</code></pre>
+    <p>You can include <em>multiple</em> API keys by separating them with commas. This is useful to have less waiting time between requests:</p>
+    <pre><code>curl -H "Authorization: &lt;your_api_key1&gt;,&lt;your_api_key2&gt;" "http://localhost:8000/notations?week=2880&server=red&country=france"</code></pre>
+
+    <h2>API Endpoints</h2>
+    <div class="endpoint">
+        <h3>GET /notations?&lt;week&gt;&amp;&lt;server&gt;&amp;&lt;country&gt;</h3>
+        <p>Fetches notations for a specific week and server, optionally filtered by country.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>week</code> (required): The week for which to fetch notations (It's the number of weeks since 01/01/1970).</li>
+            <li><code>server</code> (required): The server for which to fetch notations.</li>
+            <li><code>country</code> (optional): The country to filter the notations by.</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/notations?week=2880&server=red&country=france"</code></pre>
+    </div>
+    <div class="endpoint">
+        <h3>GET /country/&lt;server&gt;/&lt;country&gt;</h3>
+        <p>Fetches information about a specific country on a specific server.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>server</code> (required): The server on which the country is located.</li>
+            <li><code>country</code> (required): The country to fetch information about.</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/country/red/france"</code></pre>
+    </div>
+
+    <h2>Additional Information</h2>
+    <p><strong>Caching:</strong> The proxy uses Redis to cache responses, reducing the number of requests sent to the NationsGlory API and improving response times.</p>
+    <p><strong>Rate Limiting:</strong> The proxy manages API key usage to avoid hitting rate limits, ensuring smooth operation even under high load.</p>
+</section>
+<footer>
+    <p>&copy; 2025 NationsGlory API Proxy. All rights reserved.</p>
+</footer>
+</body>
+</html>
