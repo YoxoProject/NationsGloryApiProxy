@@ -1,5 +1,7 @@
 # NationsGlory API Proxy
 
+<img alt="Un magnifique logo fait par ChatGPT" src="static/favicon.ico" title="NgPortUnlocker" width="100"/>
+
 ## Project Overview
 
 NationsGlory API Proxy is a Rust-based intermediary service designed to act as a proxy between clients and the
