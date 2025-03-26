@@ -98,9 +98,48 @@ cargo run --release
 
 ## API Endpoints
 
-Some of the endpoint provided by the public API are not implemented in this proxy.
-Here are the endpoints that are implemented.
+Only endpoint that not use personal API key information are implemented in this proxy.
 For more information, please check the [NationsGlory public API documentation](https://publicapi.nationsglory.fr/).
+
+### `GET /planning?<server>&<month>&<year>`
+
+Fetches the planning for a given server, month, and year.
+
+#### Parameters:
+
+- `server` (required): The server for which to fetch planning.
+- `month` (required): The month for which to fetch planning.
+- `year` (required): The year for which to fetch planning.
+
+#### Example:
+
+```sh
+curl "http://localhost:8000/planning?server=red&month=06&year=2024"
+```
+
+### `GET /playercount`
+
+Fetches the current player count.
+
+#### Example:
+
+```sh
+curl "http://localhost:8000/playercount"
+```
+
+### `GET /hdv/<server>/list`
+
+Fetches the list of items available in the in-game auction house for a specific server.
+
+#### Parameters:
+
+- `server` (required): The server for which to fetch the auction house data.
+
+#### Example:
+
+```sh
+curl "http://localhost:8000/hdv/red/list"
+```
 
 ### `GET /notations?<week>&<server>&<country>`
 
@@ -131,6 +170,48 @@ Fetches information about a specific country on a specific server.
 
 ```sh
 curl "http://localhost:8000/country/red/france"
+```
+
+### `GET /country/list/<server>`
+
+Fetches a list of all countries on a specific server.
+
+#### Parameters:
+
+- `server` (required): The server for which to fetch the country list.
+
+#### Example:
+
+```sh
+curl "http://localhost:8000/country/list/red"
+```
+
+### `GET /user/<username>`
+
+Fetches information about a specific user.
+
+#### Parameters:
+
+- `username` (required): The username of the player.
+
+#### Example:
+
+```sh
+curl "http://localhost:8000/user/exampleUser"
+```
+
+### `GET /ngisland/list?<page>`
+
+Fetches a paginated list of islands on NGIsland.
+
+#### Parameters:
+
+- `page` (optional): The page number to fetch (for pagination).
+
+#### Example:
+
+```sh
+curl "http://localhost:8000/ngisland/list?page=1"
 ```
 
 ## Additional Information

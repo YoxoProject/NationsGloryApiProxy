@@ -112,6 +112,38 @@
     <pre><code>curl -H "Authorization: &lt;your_api_key1&gt;,&lt;your_api_key2&gt;" "http://localhost:8000/notations?week=2880&server=red&country=france"</code></pre>
 
     <h2>API Endpoints</h2>
+
+    <div class="endpoint">
+        <h3>GET /planning?&lt;server&gt;&amp;&lt;month&gt;&amp;&lt;year&gt;</h3>
+        <p>Fetches the planning for a given server, month, and year.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>server</code> (required): The server for which to fetch planning.</li>
+            <li><code>month</code> (required): The month for which to fetch planning.</li>
+            <li><code>year</code> (required): The year for which to fetch planning.</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/planning?server=red&month=06&year=2024"</code></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /playercount</h3>
+        <p>Fetches the current player count.</p>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/playercount"</code></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /hdv/&lt;server&gt;/list</h3>
+        <p>Fetches the list of items available in the in-game auction house for a specific server.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>server</code> (required): The server for which to fetch the auction house data.</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/hdv/red/list"</code></pre>
+    </div>
+
     <div class="endpoint">
         <h3>GET /notations?&lt;week&gt;&amp;&lt;server&gt;&amp;&lt;country&gt;</h3>
         <p>Fetches notations for a specific week and server, optionally filtered by country.</p>
@@ -124,6 +156,7 @@
         <p><strong>Example:</strong></p>
         <pre><code>curl "http://localhost:8000/notations?week=2880&server=red&country=france"</code></pre>
     </div>
+
     <div class="endpoint">
         <h3>GET /country/&lt;server&gt;/&lt;country&gt;</h3>
         <p>Fetches information about a specific country on a specific server.</p>
@@ -134,6 +167,39 @@
         </ul>
         <p><strong>Example:</strong></p>
         <pre><code>curl "http://localhost:8000/country/red/france"</code></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /country/list/&lt;server&gt;</h3>
+        <p>Fetches a list of all countries on a specific server.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>server</code> (required): The server for which to fetch the country list.</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/country/list/red"</code></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /user/&lt;username&gt;</h3>
+        <p>Fetches information about a specific user.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>username</code> (required): The username of the player.</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/user/exampleUser"</code></pre>
+    </div>
+
+    <div class="endpoint">
+        <h3>GET /ngisland/list?&lt;page&gt;</h3>
+        <p>Fetches a paginated list of islands on NGIsland.</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li><code>page</code> (optional): The page number to fetch (for pagination).</li>
+        </ul>
+        <p><strong>Example:</strong></p>
+        <pre><code>curl "http://localhost:8000/ngisland/list?page=1"</code></pre>
     </div>
 
     <h2>Additional Information</h2>

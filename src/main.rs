@@ -1,4 +1,4 @@
-use crate::endpoints::{get_country, get_notations};
+use crate::endpoints::{get_country, get_country_list, get_hdv, get_ngisland_list, get_notations, get_planning, get_playercount, get_user};
 use crate::utils::ApiKeyUsage;
 use crate::worker::process_requests_v2;
 use dotenv::dotenv;
@@ -40,7 +40,7 @@ async fn main() -> Result<(), rocket::Error> {
         .manage(queue_tx)
         .manage(response_broadcast_tx)
         .manage(redis_client)
-        .mount("/", routes![home_page, get_notations, get_country])
+        .mount("/", routes![home_page, get_planning, get_playercount, get_hdv, get_notations, get_country, get_country_list, get_user, get_ngisland_list])
         .launch()
         .await?;
 
