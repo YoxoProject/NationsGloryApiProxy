@@ -83,7 +83,35 @@ pub async fn get_hdv(
     api_request(queue, redis_client, request, response_broadcast_tx).await
 }
 
-#[get("/notations?<week>&<server>&<country>")]
+#[get("/notation?<week>", rank = 1)]
+pub async fn get_all_notations(
+    queue: &State<mpsc::Sender<QueuedRequest>>,
+    response_broadcast_tx: &State<broadcast::Sender<RequestResponse>>,
+    redis_client: &State<redis::Client>,
+    api_keys: ApiKeys,
+    week: &str,
+) -> Result<Json<Value>, rocket::http::Status> {
+    if api_keys.0.is_empty() {
+        return Err(rocket::http::Status::BadRequest);
+    }
+
+    let week = week.to_lowercase();
+
+    let url = format!(
+        "https://publicapi.nationsglory.fr/notations?week={}",
+        week
+    );
+
+    let request = QueuedRequest {
+        url,
+        method: "GET".to_string(),
+        api_keys: api_keys.0,
+    };
+
+    api_request(queue, redis_client, request, response_broadcast_tx).await
+}
+
+#[get("/notations?<week>&<server>&<country>", rank = 2)]
 pub async fn get_notations(
     queue: &State<mpsc::Sender<QueuedRequest>>,
     response_broadcast_tx: &State<broadcast::Sender<RequestResponse>>,

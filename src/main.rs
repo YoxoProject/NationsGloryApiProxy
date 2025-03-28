@@ -1,5 +1,5 @@
 use crate::endpoints::{
-    get_country, get_country_list, get_hdv, get_ngisland_list, get_notations, get_planning,
+    get_country, get_country_list, get_hdv, get_ngisland_list, get_all_notations, get_notations, get_planning,
     get_playercount, get_user,
 };
 use crate::utils::ApiKeyUsage;
@@ -49,6 +49,7 @@ async fn main() -> Result<(), rocket::Error> {
                 get_planning,
                 get_playercount,
                 get_hdv,
+                get_all_notations,
                 get_notations,
                 get_country,
                 get_country_list,
