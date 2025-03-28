@@ -86,7 +86,7 @@ pub async fn get_hdv(
     api_request(queue, redis_client, request, response_broadcast_tx).await
 }
 
-#[get("/notation?<week>", rank = 1)]
+#[get("/notations?<week>", rank = 1)]
 pub async fn get_all_notations(
     queue: &State<mpsc::Sender<QueuedRequest>>,
     response_broadcast_tx: &State<broadcast::Sender<RequestResponse>>,
