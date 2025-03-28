@@ -136,7 +136,7 @@ pub async fn execute_request(
                 let actual_time = chrono::Utc::now().to_rfc3339();
                 let body = json!({"cached": true, "cached_time": actual_time,"data": body});
                 let _: () = redis_conn
-                    .set_ex(cache_key, body.to_string(), 1800)
+                    .set_ex(cache_key, body.to_string(), request.cache_time.unwrap_or(1800))
                     .await
                     .unwrap();
             }

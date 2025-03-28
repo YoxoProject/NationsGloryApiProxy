@@ -1,4 +1,4 @@
-use crate::utils::{api_request, ApiKeys, QueuedRequest, RequestResponse};
+use crate::utils::{api_request, get_cache_time_from_week_number, ApiKeys, QueuedRequest, RequestResponse};
 use rocket::serde::json::Json;
 use rocket::{get, State};
 use serde_json::{json, Value};
@@ -31,6 +31,7 @@ pub async fn get_planning(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: None,
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -53,6 +54,7 @@ pub async fn get_playercount(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: Some(60),
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -78,6 +80,7 @@ pub async fn get_hdv(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: None,
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -102,10 +105,14 @@ pub async fn get_all_notations(
         week
     );
 
+    let week_number = week.parse::<i64>();
+    let cache_time = get_cache_time_from_week_number(week_number.unwrap_or(-1));
+
     let request = QueuedRequest {
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -134,10 +141,14 @@ pub async fn get_notations(
         week, server,
     );
 
+    let week_number = week.parse::<i64>();
+    let cache_time = get_cache_time_from_week_number(week_number.unwrap_or(-1));
+
     let request = QueuedRequest {
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time,
     };
 
     let response = api_request(queue, redis_client, request, response_broadcast_tx).await;
@@ -190,6 +201,7 @@ pub async fn get_country(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: None,
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -215,6 +227,7 @@ pub async fn get_country_list(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: None,
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -240,6 +253,7 @@ pub async fn get_user(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: None,
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await
@@ -266,6 +280,7 @@ pub async fn get_ngisland_list(
         url,
         method: "GET".to_string(),
         api_keys: api_keys.0,
+        cache_time: None,
     };
 
     api_request(queue, redis_client, request, response_broadcast_tx).await

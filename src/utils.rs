@@ -5,6 +5,7 @@ use rocket::serde::json::Json;
 use rocket::{Request, State};
 use serde_json::Value;
 use std::time::{Duration, Instant};
+use chrono::NaiveDate;
 use tokio::sync::{broadcast, mpsc};
 
 #[derive(Debug, Clone)]
@@ -12,6 +13,7 @@ pub struct QueuedRequest {
     pub url: String,
     pub method: String,
     pub api_keys: Vec<String>,
+    pub cache_time: Option<u64>
 }
 
 impl QueuedRequest {
@@ -112,4 +114,24 @@ pub async fn api_request(
         }
     }
     Err(rocket::http::Status::InternalServerError)
+}
+
+pub fn get_week_number_from_date(date: NaiveDate) -> i64 {
+    let ref_date = NaiveDate::from_ymd_opt(1970, 1, 12).unwrap();
+    let diff_in_days = date.signed_duration_since(ref_date).num_days();
+    (diff_in_days / 7) + 1
+}
+
+pub fn get_current_week_number() -> i64 {
+    let today = chrono::Utc::now().naive_utc().date();
+    get_week_number_from_date(today)
+}
+
+pub fn get_cache_time_from_week_number(week_number: i64) -> Option<u64> {
+    let current_week = get_current_week_number();
+    if (week_number < current_week) && week_number != -1 {
+        Some(60 * 60 * 24 * 30 * 2) // 2 mois
+    } else {
+        None
+    }
 }
