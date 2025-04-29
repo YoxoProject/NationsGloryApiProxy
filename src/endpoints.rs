@@ -245,7 +245,7 @@ pub async fn get_user(
         return Err(rocket::http::Status::BadRequest);
     }
 
-    let username = username.to_lowercase();
+    //let username = username.to_lowercase(); // TODO: Dans l'attente d'un fix de l'API Nations Glory (les skills sont actuellement non fonctionnel si en lower case)
 
     let url = format!("https://publicapi.nationsglory.fr/user/{}", username);
 
